@@ -1,0 +1,51 @@
+<div class="sculpture">
+  <canvas aria-label="A slowly rotating three-dimensional particle sculpture that responds to your pointer" role="img"></canvas>
+  <div class="sculpture-caption"><span>FORM / 001</span><span>Move to explore</span><button type="button" class="motion-toggle">Pause</button></div>
+</div>
+<script>
+  const host = document.querySelector<HTMLElement>('.sculpture')!;
+  const canvas = host.querySelector('canvas')!;
+  const ctx = canvas.getContext('2d')!;
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  let paused = reduced.matches, visible = true, frame = 0, time = 0, last = 0;
+  let width = 1, height = 1, px = -9999, py = -9999;
+  const points = Array.from({length: 48 * 28}, (_, i) => {
+    const u = i % 48 / 48 * Math.PI * 2, v = Math.floor(i / 48) / 28 * Math.PI * 2;
+    return [(1 + .39 * Math.cos(v)) * Math.cos(u), (1 + .39 * Math.cos(v)) * Math.sin(u), .39 * Math.sin(v)];
+  });
+  function draw() {
+    ctx.clearRect(0, 0, width, height);
+    const dark = document.documentElement.dataset.theme === 'dark';
+    const a = time * .16, b = .8 + Math.sin(time * .12) * .3;
+    const projected = points.map(([x,y,z]) => {
+      const xx = x*Math.cos(a)-z*Math.sin(a), zz = x*Math.sin(a)+z*Math.cos(a);
+      const yy = y*Math.cos(b)-zz*Math.sin(b), depth = y*Math.sin(b)+zz*Math.cos(b);
+      const scale = Math.min(width,height)*.27*3.5/(3.5+depth);
+      let sx = width/2+xx*scale, sy=height/2+yy*scale;
+      const dx=sx-px, dy=sy-py, dist=Math.hypot(dx,dy), force=Math.max(0,1-dist/115);
+      sx += dx/(dist||1)*force*32; sy += dy/(dist||1)*force*32;
+      return {x:sx,y:sy,z:depth};
+    });
+    projected.forEach((p,i) => {
+      const alpha = .18 + (1.6-p.z)/3.2*.55;
+      ctx.fillStyle = dark ? `rgba(240,240,240,${alpha})` : `rgba(24,24,24,${alpha})`;
+      ctx.fillRect(p.x,p.y,1.7,1.7);
+      if(i%3===0 && i%48!==47) {
+        const q=projected[i+1]; ctx.strokeStyle=dark?'rgba(255,255,255,.12)':'rgba(0,0,0,.12)';
+        ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();
+      }
+    });
+  }
+  function loop(now:number) { frame=0; if(!paused && visible && !document.hidden) { time += Math.min((now-last)/1000,.04); last=now; draw(); frame=requestAnimationFrame(loop); } }
+  function start() { if(!frame && !paused && visible && !document.hidden) {last=performance.now();frame=requestAnimationFrame(loop);} }
+  new ResizeObserver(() => {width=canvas.clientWidth;height=canvas.clientHeight;const dpr=Math.min(devicePixelRatio,2);canvas.width=width*dpr;canvas.height=height*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);draw();}).observe(canvas);
+  new IntersectionObserver(([entry]) => {visible=entry.isIntersecting;start();}).observe(host);
+  new MutationObserver(draw).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+  canvas.addEventListener('pointermove',e=>{const r=canvas.getBoundingClientRect();px=e.clientX-r.left;py=e.clientY-r.top;draw();});
+  canvas.addEventListener('pointerleave',()=>{px=py=-9999;draw();});
+  const button=host.querySelector<HTMLButtonElement>('button')!;
+  function sync(){button.textContent=paused?'Play':'Pause';button.setAttribute('aria-pressed',String(paused));}
+  button.addEventListener('click',()=>{paused=!paused;sync();start();});
+  reduced.addEventListener('change',()=>{paused=reduced.matches;sync();start();});
+  document.addEventListener('visibilitychange',start);sync();start();
+</script>

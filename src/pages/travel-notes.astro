@@ -1,15 +1,31 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { getCollection } from 'astro:content';
+import pixels from '../data/world-pixels.json';
+const notes = (await getCollection('travel', ({data}) => !data.draft)).sort((a,b)=>b.data.publishedAt.valueOf()-a.data.publishedAt.valueOf());
+const cities = new Map<string, typeof notes[number]>();
+for (const note of notes) { const key = `${note.data.city}, ${note.data.country}`; if (!cities.has(key)) cities.set(key,note); }
 ---
 
 <BaseLayout title="Travel Notes" description="Travel notes by Ryan Lyu.">
+  <section class="world-map" aria-label="World map of published travel notes">
+    <svg viewBox="0 0 864 360" role="img" aria-label={`Pixel world map with ${cities.size} cities with published notes`}>
+      {pixels.map(([x,y])=><rect class="land-pixel" x={x*6} y={y*6} width="4" height="4" />)}
+      {Array.from(cities.values()).map(note => {
+        const x=(note.data.longitude+180)/360*864;
+        const y=Math.max(5,Math.min(355,(85-note.data.latitude)/145*360));
+        return <a href={`/travel-notes/${note.id}/`} aria-label={`${note.data.city}: ${note.data.title}`}><title>{note.data.city}, {note.data.country}</title><rect class="city-marker" x={x-5} y={y-5} width="10" height="10" /></a>;
+      })}
+    </svg>
+    <div class="map-caption"><span>THE WORLD, ONE CITY AT A TIME</span><span><i></i> {cities.size} cities / {notes.length} notes</span></div>
+  </section>
   <header class="page-heading collection-heading">
     <p>TRAVEL / FIELD NOTES</p>
     <h1>Notes from elsewhere</h1>
-    <div class="heading-rule"><span>00 ENTRIES</span></div>
+    <div class="heading-rule"><span>{String(notes.length).padStart(2,'0')} ENTRIES</span></div>
   </header>
-  <section class="empty-archive" aria-labelledby="travel-status">
+  {notes.length ? <ol class="travel-list">{notes.map(note=><li><a href={`/travel-notes/${note.id}/`}><span>{note.data.city}, {note.data.country}</span><h2>{note.data.title}</h2><p>{note.data.description}</p><span>Read note ↗</span></a></li>)}</ol> : <section class="empty-archive" aria-labelledby="travel-status">
     <p>JOURNAL IN PROGRESS</p>
     <h2 id="travel-status">Stories, routes, and small observations will live here.</h2>
-  </section>
+  </section>}
 </BaseLayout>

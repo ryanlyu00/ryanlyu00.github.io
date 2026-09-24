@@ -14,4 +14,13 @@ const blog = defineCollection({
   }),
 });
 
-export const collections = { blog };
+const travel = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/travel' }),
+  schema: z.object({
+    title: z.string(), description: z.string(), publishedAt: z.coerce.date(),
+    city: z.string(), country: z.string(),
+    latitude: z.number().min(-90).max(90), longitude: z.number().min(-180).max(180),
+    draft: z.boolean().default(false),
+  }),
+});
+export const collections = { blog, travel };

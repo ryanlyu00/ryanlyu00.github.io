@@ -25,6 +25,9 @@ const pageTitle = title === site.name ? `${site.name} — ${site.domain}` : `${t
     <link rel="apple-touch-icon" href="/ryan-avatar.png" />
     <link rel="alternate" type="application/rss+xml" title={`${site.name} RSS`} href="/rss.xml" />
     <title>{pageTitle}</title>
+    <script is:inline>
+      try { document.documentElement.dataset.theme = localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); } catch {}
+    </script>
   </head>
   <body>
     <div class="page-shell">
@@ -34,11 +37,13 @@ const pageTitle = title === site.name ? `${site.name} — ${site.domain}` : `${t
           <span class="brand-name">{site.name}</span>
         </a>
         <nav aria-label="Main navigation">
+          <a href="/">Home</a>
           <a href="/blog/">Blog</a>
           <a href="/photography/">Photography</a>
           <a href="/travel-notes/">Travel Notes</a>
           <a href="/about/">About</a>
         </nav>
+        <button class="theme-toggle" type="button" aria-label="Switch color theme">Light / Dark</button>
       </header>
       <main><slot /></main>
       <footer class="site-footer">
@@ -48,3 +53,17 @@ const pageTitle = title === site.name ? `${site.name} — ${site.domain}` : `${t
     </div>
   </body>
 </html>
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('.theme-toggle');
+  function label() { if(toggle) toggle.textContent = document.documentElement.dataset.theme === 'dark' ? 'Light ↗' : 'Dark ↗'; }
+  label();
+  toggle?.addEventListener('click', () => {
+    const theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = theme;
+    try { localStorage.setItem('theme', theme); } catch {}
+    label();
+  });
+  document.querySelectorAll<HTMLAnchorElement>('nav a').forEach(a => {
+    if (a.pathname === location.pathname || (a.pathname !== '/' && location.pathname.startsWith(a.pathname))) a.setAttribute('aria-current', 'page');
+  });
+</script>

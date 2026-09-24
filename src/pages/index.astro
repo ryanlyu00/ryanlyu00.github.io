@@ -3,6 +3,7 @@ import { getCollection } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PostList from "../components/PostList.astro";
 import { site } from "../data/site";
+import Sculpture from "../components/Sculpture.astro";
 
 const posts = (await getCollection("blog", ({ data }) => !data.draft))
   .sort((a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf())
@@ -11,6 +12,7 @@ const posts = (await getCollection("blog", ({ data }) => !data.draft))
 
 <BaseLayout>
   <section class="hero">
+    <div class="hero-copy">
     <h1>Hello, I'm<br /><em>Ryan Lyu.</em></h1>
     <p class="hero-intro">{site.intro}</p>
     <div class="hero-actions">
@@ -19,7 +21,8 @@ const posts = (await getCollection("blog", ({ data }) => !data.draft))
       ))}
       <a href={`mailto:${site.email}`}>Email me<span aria-hidden="true">↗</span></a>
     </div>
-    <div class="hero-note" aria-hidden="true">BUILD<br />WRITE<br />THINK</div>
+    </div>
+    <Sculpture />
   </section>
 
   <section class="latest" aria-labelledby="latest-title">
