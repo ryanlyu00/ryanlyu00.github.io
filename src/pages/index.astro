@@ -14,7 +14,6 @@ const posts = (await getCollection("blog", ({ data }) => !data.draft))
   <section class="hero">
     <div class="hero-copy">
     <h1>Hello, I'm<br /><em>Ryan Lyu.</em></h1>
-    <p class="hero-intro">{site.intro}</p>
     <div class="hero-actions">
       {site.links.map((link) => (
         <a href={link.href} target="_blank" rel="noreferrer">{link.label}<span aria-hidden="true">↗</span></a>
