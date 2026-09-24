@@ -1,40 +1,41 @@
 # ryanlyu.com
 
-Ryan Lyu 的个人网站与博客，使用 Astro 构建，输出为纯静态文件，适合部署到 Cloudflare Pages。
+Ryan Lyu's personal website and blog. Built with Astro and deployed as a static site on Cloudflare Workers.
 
-## 本地开发
+## Local development
 
 ```bash
 npm install
 npm run dev
 ```
 
-## 写一篇新文章
+## Write a new post
 
-在 `src/content/blog/` 新建 Markdown 文件：
+Create a Markdown file in `src/content/blog/`:
 
 ```md
 ---
-title: "文章标题"
-description: "一句话摘要"
+title: "Post title"
+description: "A one-line summary"
 publishedAt: 2026-09-24
-tags: ["随笔"]
+tags: ["Notes"]
 draft: false
 ---
 
-正文从这里开始。
+Start writing here.
 ```
 
-`draft: true` 的文章不会出现在网站或 RSS 中。
+Posts with `draft: true` are excluded from the website and RSS feed.
 
-## 修改个人信息
+## Update personal information
 
-姓名、简介、邮箱和社交链接集中在 `src/data/site.ts`。
+Name, bio, email, and social links live in `src/data/site.ts`.
 
-## 部署到 Cloudflare Pages
+## Deploy to Cloudflare Workers
 
 - Build command: `npm run build`
 - Build output directory: `dist`
-- Node.js version: 22 或更新版本
+- Deploy command: `npx wrangler deploy`
+- Node.js version: 22 or newer
 
-部署完成后，在 Cloudflare Pages 项目的 Custom domains 中添加 `ryanlyu.com`。
+The production Worker is connected to the `main` branch and serves `ryanlyu.com`.

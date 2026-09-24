@@ -1,14 +1,14 @@
 ---
-title: "把过程也当作作品的一部分"
-description: "比起只展示最终结果，我更想记录选择、试错与修正。"
+title: "The Process Is Part of the Work"
+description: "Instead of showing only the final result, I want to document the choices, mistakes, and revisions along the way."
 publishedAt: 2026-09-12
-tags: ["构建"]
+tags: ["Building"]
 ---
 
-我们习惯展示完成的作品，却很少展示作品是怎样长出来的。
+We are used to showing finished work, but rarely show how it came to be.
 
-一个项目真正有价值的部分，往往藏在过程中：为什么做这个选择，哪些假设后来被推翻，又是什么让方向变得更清楚。
+The most valuable part of a project often lives in the process: why a choice was made, which assumptions were overturned, and what eventually made the direction clearer.
 
-公开记录过程，不是把所有细节都直播出来。它更像是定期为自己的判断留下快照。它迫使我把直觉变成语言，也让下一次决策有迹可循。
+Documenting the process in public does not mean broadcasting every detail. It is more like taking regular snapshots of my judgment. It forces me to turn intuition into language and gives future decisions something to build on.
 
-接下来，我会在这里逐步记录正在做的项目。成功的经验当然值得写，走过的弯路也一样。
+I will use this space to document the projects I am working on. The things that go well are worth writing about, and so are the wrong turns.

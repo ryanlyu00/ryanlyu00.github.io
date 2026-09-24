@@ -14,10 +14,10 @@ interface Props {
 }
 
 const { posts } = Astro.props;
-const formatter = new Intl.DateTimeFormat("zh-CN", {
+const formatter = new Intl.DateTimeFormat("en-US", {
   year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
+  month: "short",
+  day: "numeric",
 });
 ---
 
@@ -31,7 +31,7 @@ const formatter = new Intl.DateTimeFormat("zh-CN", {
         </div>
         <h2>{post.data.title}</h2>
         <p>{post.data.description}</p>
-        <span class="read-more" aria-hidden="true">阅读全文 ↗</span>
+        <span class="read-more" aria-hidden="true">Read ↗</span>
       </a>
     </li>
   ))}

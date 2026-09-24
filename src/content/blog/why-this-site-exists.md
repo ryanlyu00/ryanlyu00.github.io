@@ -1,22 +1,22 @@
 ---
-title: "为什么我要重新拥有一个个人网站"
-description: "社交媒体适合流动，个人网站适合沉淀。这是我给这块小空间写下的开场白。"
+title: "Why I Wanted a Personal Website Again"
+description: "Social media is made to move. A personal website is made to last. This is an opening note for my small corner of the internet."
 publishedAt: 2026-09-24
-tags: ["随笔"]
+tags: ["Notes"]
 ---
 
-互联网让表达变得很容易，也让表达变得很短暂。
+The internet has made it easy to publish—and just as easy for what we publish to disappear.
 
-信息流里的内容常常只活几个小时。它们被快速地读完、点赞，然后沉到底部。个人网站不一样。它没有推荐算法，也不需要追逐热点；我可以按自己的节奏，把零散的想法整理成更完整的文字。
+Posts in a feed often live for only a few hours. They are read, liked, and pushed out of sight. A personal website is different. There is no recommendation algorithm to please and no trend to chase. I can work at my own pace and turn scattered thoughts into something more complete.
 
-## 这里会写什么
+## What I will write about
 
-我会记录正在学习和构建的东西：产品思考、技术实践、项目复盘，也包括一些工作之外的观察。
+I will document what I am learning and building: thoughts on products, technical experiments, project reflections, and observations beyond work.
 
-这些内容未必都是结论。很多时候，写作本身就是理解问题的方式。把一件事讲清楚，也是在检验自己是否真的想明白了。
+Not everything here will be a conclusion. Writing is often how I understand a problem. Explaining something clearly is also a way to find out whether I truly understand it.
 
-## 保持简单
+## Keeping it simple
 
-这个网站会尽量保持轻巧：没有复杂的功能，没有需要维护的账号系统。打开就能读，写完就能发布。
+This site will stay intentionally lightweight: no complicated features and no account system to maintain. Open it and read; finish writing and publish.
 
-希望几年后回头看，这里能留下清晰的成长轨迹。
+I hope that, a few years from now, this place will show a clear trail of growth.

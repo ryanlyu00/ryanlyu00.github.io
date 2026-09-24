@@ -7,11 +7,11 @@ const posts = (await getCollection("blog", ({ data }) => !data.draft))
   .sort((a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf());
 ---
 
-<BaseLayout title="文章" description="Ryan Lyu 的文章与手记。">
+<BaseLayout title="Writing" description="Essays and notes by Ryan Lyu.">
   <header class="page-heading">
-    <p>ARCHIVE / 文章归档</p>
-    <h1>我写下来的事</h1>
-    <div class="heading-rule"><span>{String(posts.length).padStart(2, "0")} 篇</span></div>
+    <p>ARCHIVE / ALL WRITING</p>
+    <h1>Things I've written</h1>
+    <div class="heading-rule"><span>{String(posts.length).padStart(2, "0")} POSTS</span></div>
   </header>
   <PostList posts={posts} />
 </BaseLayout>
