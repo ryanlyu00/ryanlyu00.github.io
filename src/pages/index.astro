@@ -11,7 +11,6 @@ const posts = (await getCollection("blog", ({ data }) => !data.draft))
 
 <BaseLayout>
   <section class="hero">
-    <div class="hero-kicker"><span></span> RYANLYU.COM · ONLINE</div>
     <h1>Hello, I'm<br /><em>Ryan Lyu.</em></h1>
     <p class="hero-intro">{site.intro}</p>
     <div class="hero-actions">
