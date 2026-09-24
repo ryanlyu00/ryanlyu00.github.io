@@ -1,0 +1,38 @@
+---
+interface Post {
+  id: string;
+  data: {
+    title: string;
+    description: string;
+    publishedAt: Date;
+    tags: string[];
+  };
+}
+
+interface Props {
+  posts: Post[];
+}
+
+const { posts } = Astro.props;
+const formatter = new Intl.DateTimeFormat("zh-CN", {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+---
+
+<ol class="post-list">
+  {posts.map((post) => (
+    <li>
+      <a href={`/blog/${post.id}/`}>
+        <div class="post-meta">
+          <time datetime={post.data.publishedAt.toISOString()}>{formatter.format(post.data.publishedAt)}</time>
+          {post.data.tags[0] && <span>{post.data.tags[0]}</span>}
+        </div>
+        <h2>{post.data.title}</h2>
+        <p>{post.data.description}</p>
+        <span class="read-more" aria-hidden="true">阅读全文 ↗</span>
+      </a>
+    </li>
+  ))}
+</ol>

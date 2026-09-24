@@ -1,0 +1,24 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { site } from "../data/site";
+---
+
+<BaseLayout title="关于" description={`关于 ${site.name}。`}>
+  <section class="about-page">
+    <header>
+      <p>ABOUT / 关于</p>
+      <h1>你好，<br />我是 Ryan。</h1>
+    </header>
+    <div class="about-copy">
+      <p class="lead">{site.bio}</p>
+      <p>这个网站是我的数字花园：用来沉淀阶段性的想法、项目复盘和学习笔记。内容会慢慢生长，不追求日更，只记录值得留下来的东西。</p>
+      <div class="contact-block">
+        <p>找到我</p>
+        <div>
+          {site.links.map((link) => <a href={link.href} target="_blank" rel="noreferrer">{link.label} ↗</a>)}
+          <a href={`mailto:${site.email}`}>Email ↗</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
