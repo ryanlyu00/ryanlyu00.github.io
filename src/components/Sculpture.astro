@@ -1,177 +1,98 @@
-<div class="sculpture">
-  <canvas aria-label="Dots that form the words Build, Curious, Think and Play in turn. Move your pointer to scatter them." role="img"></canvas>
+<div class="television">
+  <div class="tv-stage">
+    <img class="tv-image" src="/crt-television-front.png" alt="" width="1536" height="1024" decoding="async" />
+    <div class="tv-screen" role="img" aria-label="Build">
+      <span class="tv-word">BUILD</span>
+      <canvas class="tv-static" aria-hidden="true"></canvas>
+      <span class="tv-scanlines" aria-hidden="true"></span>
+    </div>
+  </div>
 </div>
+
 <script>
-  type Target = { x: number; y: number; z: number; ink: number; dust?: boolean };
-  type Particle = { x: number; y: number; z: number; vx: number; vy: number; ink: number; delay: number; sx: number; sy: number };
+  const television = document.querySelector<HTMLElement>('.television');
+  if (television) {
+    const screen = television.querySelector<HTMLElement>('.tv-screen')!;
+    const word = television.querySelector<HTMLElement>('.tv-word')!;
+    const canvas = television.querySelector<HTMLCanvasElement>('.tv-static')!;
+    const ctx = canvas.getContext('2d')!;
+    const words = ['BUILD', 'EXPLORE', 'THINK', 'PLAY', 'RYAN LYU'];
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+    let index = 0;
+    let active = true;
+    let switching = false;
+    let interval: number | undefined;
+    let noiseFrame: number | undefined;
+    let revealTimer: number | undefined;
+    let finishTimer: number | undefined;
 
-  const host = document.querySelector<HTMLElement>('.sculpture')!;
-  const canvas = host.querySelector('canvas')!;
-  const ctx = canvas.getContext('2d')!;
-  const words = ['Build', 'Curious', 'Think', 'Play'];
-  const hold = 3.2;
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
-  let paused = reduced.matches, visible = true, frame = 0, time = 0, last = 0;
-  let width = 1, height = 1, cell = 6, px = -9999, py = -9999;
-  let shapes: Target[][] = [], current = 0, shapeStart = 0, tiltX = 0, tiltY = 0;
-  const particles: Particle[] = [];
-
-  function shuffled<T>(list: T[]) {
-    const out = list.slice();
-    for (let i = out.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [out[i], out[j]] = [out[j], out[i]]; }
-    return out;
-  }
-
-  function buildShapes() {
-    cell = Math.max(4.5, width / 80);
-    const off = document.createElement('canvas');
-    off.width = Math.ceil(width); off.height = Math.ceil(height);
-    const o = off.getContext('2d', { willReadFrequently: true })!;
-    const font = (size: number) => `700 ${size}px Arial, Helvetica, system-ui, sans-serif`;
-    // Letters are drawn one by one with a gap so neighbouring strokes never merge (e.g. "rn" into "m").
-    const gap = cell * 1.2;
-    const wordWidth = (word: string) => [...word].reduce((sum, ch) => sum + o.measureText(ch).width, 0) + gap * (word.length - 1);
-
-    o.font = font(100);
-    const widest = Math.max(...words.map(w => wordWidth(w) - gap * (w.length - 1)));
-    const size = (width * .94 - gap * 6) / widest * 100;
-    o.font = font(size);
-    // Stretch the glyphs vertically so the words stand tall and fill the canvas.
-    const tallest = Math.max(...words.map(w => { const m = o.measureText(w); return m.actualBoundingBoxAscent + m.actualBoundingBoxDescent; }));
-    const stretch = Math.min(3.2, Math.max(1, height * .8 / tallest));
-
-    const texts = words.map(word => {
-      o.setTransform(1, 0, 0, 1, 0, 0);
-      o.clearRect(0, 0, off.width, off.height);
-      const m = o.measureText(word);
-      const baseline = height / 2 + (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2 * stretch;
-      o.setTransform(1, 0, 0, stretch, 0, baseline);
-      o.fillStyle = '#000'; o.textBaseline = 'alphabetic';
-      let x = (width - wordWidth(word)) / 2;
-      for (const ch of word) { o.fillText(ch, x, 0); x += o.measureText(ch).width + gap; }
-
-      // A cell becomes a dot when enough of it is covered, so thin strokes still get a solid line of dots.
-      const data = o.getImageData(0, 0, off.width, off.height).data;
-      const covered = (x: number, y: number) => {
-        const ix = Math.round(x), iy = Math.round(y);
-        return ix >= 0 && iy >= 0 && ix < off.width && iy < off.height && data[(iy * off.width + ix) * 4 + 3] > 128;
-      };
-      const hits: Target[] = [];
-      for (let gy = cell / 2; gy < height; gy += cell) {
-        for (let gx = cell / 2; gx < width; gx += cell) {
-          let n = 0;
-          for (const sy of [-.33, 0, .33]) for (const sx of [-.33, 0, .33]) if (covered(gx + sx * cell, gy + sy * cell)) n++;
-          if (n >= 3) hits.push({ x: gx, y: gy, z: 0, ink: .88 });
-        }
+    // A small bitmap, enlarged by CSS, makes the interference look like analog snow.
+    canvas.width = 160;
+    canvas.height = 90;
+    function paintStatic() {
+      const pixels = ctx.createImageData(canvas.width, canvas.height);
+      for (let i = 0; i < pixels.data.length; i += 4) {
+        const shade = Math.random() * 255;
+        pixels.data[i] = shade;
+        pixels.data[i + 1] = shade;
+        pixels.data[i + 2] = shade;
+        pixels.data[i + 3] = 255;
       }
-      return hits;
-    });
-
-    const count = Math.max(...texts.map(t => t.length));
-    while (particles.length < count) {
-      const x = Math.random() * width, y = Math.random() * height;
-      particles.push({ x, y, z: 0, vx: 0, vy: 0, ink: 0, delay: Math.random() * .7, sx: x, sy: y });
+      ctx.putImageData(pixels, 0, 0);
+      if (switching && !reduced.matches && !document.hidden) noiseFrame = requestAnimationFrame(paintStatic);
     }
-    // Spare particles hide inside the current word, so the next word always grows out of this one.
-    shapes = texts.map(hits => {
-      const targets = shuffled(hits);
-      while (targets.length < particles.length) targets.push({ ...hits[Math.floor(Math.random() * hits.length)], ink: 0, dust: true });
-      return shuffled(targets);
-    });
-  }
 
-  function setShape(index: number) {
-    current = index; shapeStart = time;
-    particles.forEach(p => p.delay = Math.random() * .7);
-  }
-
-  function snap() {
-    particles.forEach((p, i) => { const t = shapes[current][i]; p.x = t.x; p.y = t.y; p.z = t.z; p.vx = p.vy = 0; p.ink = t.ink; });
-  }
-
-  function step(dt: number) {
-    if (time - shapeStart > hold + .7) setShape((current + 1) % shapes.length);
-    const drag = Math.exp(-9 * dt), elapsed = time - shapeStart, ease = Math.min(1, dt * 2);
-    // The words lean gently toward the pointer while it is over the canvas.
-    const aimY = px > -9000 ? (px / width - .5) * .5 : 0, aimX = py > -9000 ? (.5 - py / height) * .3 : 0;
-    tiltY += (aimY - tiltY) * ease; tiltX += (aimX - tiltX) * ease;
-    particles.forEach((p, i) => {
-      const t = shapes[current][i];
-      // Spring toward the target once this particle's stagger delay has passed.
-      if (elapsed > p.delay) { p.vx += (t.x - p.x) * 40 * dt; p.vy += (t.y - p.y) * 40 * dt; }
-      // Repel from where the dot appears on screen, since the pointer lives in screen space.
-      const dx = p.sx - px, dy = p.sy - py, dist = Math.hypot(dx, dy);
-      if (dist < 45) { const f = (1 - dist / 45) * 9000 * dt; p.vx += dx / (dist || 1) * f; p.vy += dy / (dist || 1) * f; }
-      p.vx *= drag; p.vy *= drag;
-      p.x += p.vx * dt; p.y += p.vy * dt; p.z += (t.z - p.z) * ease;
-      p.ink += (t.ink - p.ink) * Math.min(1, dt * 4);
-    });
-  }
-
-  function draw() {
-    ctx.clearRect(0, 0, width, height);
-    const dark = document.documentElement.dataset.theme === 'dark';
-    const rgb = dark ? '240,240,240' : '24,24,24', size = cell * .62, depth = cell * 2.6;
-    // Layered slow sine waves: a drifting sway rather than a full spin.
-    const ry = Math.sin(time * .45) * .3 + Math.sin(time * .19 + 2) * .14 + tiltY;
-    const rx = Math.sin(time * .33 + 1) * .12 + Math.sin(time * .14) * .06 + tiltX;
-    const rz = Math.sin(time * .27 + 4) * .03, bob = Math.sin(time * .7) * height * .015;
-    const cy = Math.cos(ry), sy = Math.sin(ry), cx = Math.cos(rx), sx = Math.sin(rx), cz = Math.cos(rz), sz = Math.sin(rz);
-    const focal = Math.max(width, height) * 1.6, ox = width / 2, oy = height / 2;
-    const project = (x: number, y: number, z: number) => {
-      let X = x - ox, Y = y - oy;
-      [X, Y] = [X * cz - Y * sz, X * sz + Y * cz];
-      const x1 = X * cy + z * sy, z1 = z * cy - X * sy;
-      const y2 = Y * cx - z1 * sx, z2 = Y * sx + z1 * cx;
-      const k = focal / (focal + z2);
-      return { x: ox + x1 * k, y: oy + bob + y2 * k, k, z: z2 };
-    };
-    const dot = (x: number, y: number, k: number, ink: number) => {
-      const s = size * k;
-      ctx.fillStyle = `rgba(${rgb},${Math.max(0, Math.min(1, ink)).toFixed(3)})`;
-      ctx.fillRect(x - s / 2, y - s / 2, s, s);
-    };
-    // Back layers first give the letters thickness; they only show when the words turn.
-    for (const [layer, fade] of [[1, .16], [.5, .26]]) {
-      particles.forEach((p, i) => {
-        if (shapes[current][i].dust) return;
-        const q = project(p.x, p.y, p.z + depth * layer);
-        dot(q.x, q.y, q.k, p.ink * fade);
-      });
+    function finishSwitch() {
+      screen.classList.remove('is-tuning');
+      switching = false;
+      if (noiseFrame) cancelAnimationFrame(noiseFrame);
+      noiseFrame = undefined;
     }
-    particles.forEach(p => {
-      const q = project(p.x, p.y, p.z);
-      p.sx = q.x; p.sy = q.y;
-      dot(q.x, q.y, q.k, p.ink * (1 - q.z / 900));
-    });
-  }
 
-  function loop(now: number) {
-    frame = 0;
-    if (!paused && visible && !document.hidden) {
-      const dt = Math.min((now - last) / 1000, .04); last = now; time += dt;
-      step(dt); draw();
-      frame = requestAnimationFrame(loop);
+    function nextWord() {
+      if (switching) return;
+      index = (index + 1) % words.length;
+      word.classList.toggle('is-long', words[index].length > 5);
+      if (reduced.matches) {
+        word.textContent = words[index];
+        screen.setAttribute('aria-label', words[index]);
+        return;
+      }
+      switching = true;
+      screen.classList.add('is-tuning');
+      paintStatic();
+      revealTimer = window.setTimeout(() => {
+        word.textContent = words[index];
+        screen.setAttribute('aria-label', words[index]);
+      }, 300);
+      finishTimer = window.setTimeout(finishSwitch, 540);
     }
+
+    function updatePlayback() {
+      if (interval) window.clearInterval(interval);
+      interval = undefined;
+      if (active && !document.hidden && !reduced.matches) interval = window.setInterval(nextWord, 3800);
+      if (document.hidden && switching) {
+        window.clearTimeout(revealTimer);
+        window.clearTimeout(finishTimer);
+        word.textContent = words[index];
+        screen.setAttribute('aria-label', words[index]);
+        finishSwitch();
+      }
+    }
+
+    new IntersectionObserver(([entry]) => { active = entry.isIntersecting; updatePlayback(); }).observe(television);
+    reduced.addEventListener('change', () => {
+      if (reduced.matches && switching) {
+        window.clearTimeout(revealTimer);
+        window.clearTimeout(finishTimer);
+        word.textContent = words[index];
+        screen.setAttribute('aria-label', words[index]);
+        finishSwitch();
+      }
+      updatePlayback();
+    });
+    document.addEventListener('visibilitychange', updatePlayback);
+    updatePlayback();
   }
-  function start() { if (!frame && !paused && visible && !document.hidden) { last = performance.now(); frame = requestAnimationFrame(loop); } }
-
-  let sized = false;
-  new ResizeObserver(() => {
-    width = canvas.clientWidth; height = canvas.clientHeight;
-    const dpr = Math.min(devicePixelRatio, 2);
-    canvas.width = width * dpr; canvas.height = height * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    buildShapes();
-    if (!sized) { sized = true; setShape(0); snap(); }
-    else if (paused) snap();
-    draw();
-  }).observe(canvas);
-  new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; start(); }).observe(host);
-  new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-  canvas.addEventListener('pointermove', e => { const r = canvas.getBoundingClientRect(); px = e.clientX - r.left; py = e.clientY - r.top; });
-  canvas.addEventListener('pointerleave', () => { px = py = -9999; });
-
-  reduced.addEventListener('change', () => { paused = reduced.matches; if (paused) { setShape(0); snap(); draw(); } start(); });
-  document.addEventListener('visibilitychange', start);
-  start();
 </script>
